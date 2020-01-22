@@ -33,7 +33,24 @@ public final class Server {
 	/// It is an error to attempt to start more than one server on the same port without calling `stop`  on the previous servers first.
 	public func start(port: Int = 8880) {
 		switch state {
-			case .notRunning: createSocket(bindingTo: port)
+			case .notRunning: try! createSocket(bindingTo: port)
+			case .running: fatalError("Cannot start server because it's already started.")
+		}
+	}
+	
+	/// Starts the server on a port in the specified range, returns the port the server was started on.
+	///
+	/// It will error if there is no available port in the collection.
+	public func start<T: Collection>(port ports: T) -> Int where T.Element == Int {
+		switch state {
+			case .notRunning:
+				for port in ports {
+					do {
+						try createSocket(bindingTo: port)
+						return port
+					} catch {}
+				}
+				fatalError("Cannot start server because no ports were available")
 			case .running: fatalError("Cannot start server because it's already started.")
 		}
 	}
@@ -93,9 +110,9 @@ public final class Server {
 	
 	// MARK: Private
 	
-	private func createSocket(bindingTo port: Int) {
+	private func createSocket(bindingTo port: Int) throws {
 		let socket = Socket()
-		socket.bind(port: port)
+		try socket.bind(port: port)
 		let eventListener = EventListener()
 		eventListener.register(socket) { [weak self] in
 			self?.handleIncomingConnection()
