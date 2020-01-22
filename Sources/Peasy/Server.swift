@@ -94,6 +94,11 @@ public final class Server {
 		respond(with: response, when: rules, removeAfterResponding: removeAfterResponding)
 	}
 	
+	/// Removes all the previously set configurations without stopping the server
+	public func removeAllResponses() {
+ 		configurations.removeAll()
+ 	}
+	
 	/// Stops the server and frees up the port used when calling `start`.
 	public func stop() {
 		switch state {
@@ -160,7 +165,7 @@ public final class Server {
 	
 	private func respond(with response: @escaping (Request) -> Response, when rules: [Rule], removeAfterResponding: Bool) {
 		let config = Configuration(response: response, rules: rules, removeAfterResponding: removeAfterResponding)
-		configurations.append(config)
+		configurations.insert(config, at: 0)
 	}
 	
 }
